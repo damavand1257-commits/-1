@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#f3f6fb"/>
+  <rect x="76" y="120" width="360" height="320" rx="36"
+        fill="#ffffff" stroke="#123c7a" stroke-width="20"/>
+  <path d="M76 156a36 36 0 0 1 36-36h288a36 36 0 0 1 36 36v48H76z"
+        fill="#123c7a"/>
+  <rect x="140" y="80" width="26" height="80" rx="13" fill="#123c7a"/>
+  <rect x="346" y="80" width="26" height="80" rx="13" fill="#123c7a"/>
+  <!-- نقاط تقویم -->
+  <circle cx="148" cy="252" r="16" fill="#000"/>
+  <circle cx="212" cy="252" r="16" fill="#000"/>
+  <circle cx="276" cy="252" r="16" fill="#000"/>
+  <circle cx="340" cy="252" r="16" fill="#000"/>
+  <circle cx="148" cy="316" r="16" fill="#000"/>
+  <circle cx="212" cy="316" r="16" fill="#000"/>
+  <circle cx="276" cy="316" r="22" fill="#ffb703"/> <!-- امروز -->
+  <circle cx="276" cy="316" r="16" fill="#000"/>
+  <circle cx="340" cy="316" r="16" fill="#d21f2c"/> <!-- جمعه -->
+  <circle cx="148" cy="380" r="16" fill="#000"/>
+  <circle cx="212" cy="380" r="16" fill="#000"/>
+  <circle cx="276" cy="380" r="16" fill="#000"/>
+</svg>
