@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>تقویم فارسی</title>
+
+<!-- PWA -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#123c7a">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="apple-touch-icon" href="./icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="تقویم فارسی">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- فونت (اختیاری – SW کش می‌کند، در غیر این صورت فونت سیستم استفاده می‌شود) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#f3f6fb;
+    --card:#ffffff;
+    --ink:#000000;
+    --friday:#d21f2c;
+    --friday-border:#9e0f1a;
+    --today:#ffb703;
+    --btn:#e9eff9;
+    --btn-ink:#123c7a;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    padding:16px;
+    padding-bottom:calc(16px + env(safe-area-inset-bottom));
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Vazirmatn','Vazir','IRANSansX','IRANSans','Sahel','Shabnam',
+                Tahoma,'Segoe UI',sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .calendar{
+    width:100%;
+    max-width:600px;
+    background:var(--card);
+    border-radius:22px;
+    padding:20px 18px 16px;
+    box-shadow:0 10px 35px rgba(15,35,75,.12);
+  }
+  .header{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; margin-bottom:14px;
+  }
+  .title{
+    flex:1; text-align:center;
+    font-size:2rem; font-weight:900; line-height:1.2; color:#000;
+  }
+  .nav{
+    width:54px; height:54px; flex:0 0 auto;
+    border:none; border-radius:14px; background:var(--btn); color:var(--btn-ink);
+    font-family:inherit; font-size:1.6rem; font-weight:900; line-height:1;
+    cursor:pointer; display:grid; place-items:center;
+    transition:background .15s, transform .1s;
+  }
+  .nav:hover{ background:#d8e4f6; }
+  .nav:active{ transform:scale(.94); }
+
+  .weekdays{
+    display:grid; grid-template-columns:repeat(7,1fr);
+    gap:8px; margin-bottom:8px;
+  }
+  .weekdays div{
+    text-align:center; padding:6px 0;
+    font-size:1.2rem; font-weight:900; color:#334155;
+  }
+  .weekdays .wd-fri{ color:var(--friday); }
+
+  .grid{
+    display:grid; grid-template-columns:repeat(7,1fr); gap:8px;
+  }
+  .cell{
+    aspect-ratio:1 / 1;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:14px; border:2px solid transparent;
+    background:#f1f5fb; color:#000;
+    font-size:1.6rem; font-weight:900;
+    user-select:none;
+  }
+  .cell.empty{ background:transparent; border-color:transparent; }
+  .cell.friday{
+    background:var(--friday);
+    border-color:var(--friday-border);
+    color:#ffffff;
+  }
+  .cell.today{
+    outline:4px solid var(--today);
+    outline-offset:-2px;
+  }
+
+  .footer{
+    display:flex; justify-content:center; gap:10px; flex-wrap:wrap;
+    margin-top:14px;
+  }
+  .pill{
+    border:none; border-radius:12px; padding:11px 26px;
+    background:var(--btn); color:var(--btn-ink);
+    font-family:inherit; font-size:1.05rem; font-weight:900;
+    cursor:pointer; transition:background .15s, transform .1s;
+  }
+  .pill:hover{ background:#d8e4f6; }
+  .pill:active{ transform:scale(.96); }
+  .pill.install{
+    background:#123c7a; color:#fff;
+  }
+  .pill.install:hover{ background:#1a4d99; }
+
+  /* نشانگر آفلاین */
+  .offline-badge{
+    position:fixed; top:10px; left:10px;
+    background:#111; color:#fff;
+    font-size:.8rem; font-weight:700;
+    padding:5px 12px; border-radius:999px;
+    opacity:0; transform:translateY(-6px);
+    transition:opacity .25s, transform .25s;
+    pointer-events:none;
+    z-index:10;
+  }
+  .offline-badge.show{ opacity:1; transform:translateY(0); }
+
+  @media (max-width:430px){
+    .calendar{ padding:16px 12px 12px; border-radius:18px; }
+    .title{ font-size:1.5rem; }
+    .nav{ width:44px; height:44px; font-size:1.3rem; border-radius:12px; }
+    .weekdays{ gap:6px; }
+    .weekdays div{ font-size:1rem; }
+    .grid{ gap:6px; }
+    .cell{ font-size:1.15rem; border-radius:10px; }
+    .pill{ padding:10px 20px; font-size:.98rem; }
+  }
+
+  /* حالت standalone (نصب‌شده) */
+  @media (display-mode: standalone){
+    body{ padding-top:max(16px, env(safe-area-inset-top)); }
+  }
+</style>
+</head>
+<body>
+
+<div class="offline-badge" id="offlineBadge">حالت آفلاین</div>
+
+<div class="calendar">
+  <div class="header">
+    <button class="nav" id="prevBtn" title="ماه قبل" aria-label="ماه قبل">›</button>
+    <div class="title" id="title">—</div>
+    <button class="nav" id="nextBtn" title="ماه بعد" aria-label="ماه بعد">‹</button>
+  </div>
+
+  <div class="weekdays" id="weekdays"></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="footer">
+    <button class="pill" id="todayBtn">امروز</button>
+    <button class="pill install" id="installBtn" hidden>📲 نصب اپلیکیشن</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- تبدیل تاریخ ---------- */
+  function toJalali(gy, gm, gd) {
+    var gDays = [0,31,59,90,120,151,181,212,243,273,304,334];
+    var jy = (gy <= 1600) ? 0 : 979;
+    var gy2 = gy - ((gy <= 1600) ? 621 : 1600);
+    var gy3 = (gm > 2) ? gy2 + 1 : gy2;
+    var days = (365 * gy2) + Math.floor((gy3 + 3) / 4)
+      - Math.floor((gy3 + 99) / 100) + Math.floor((gy3 + 399) / 400)
+      - 80 + gd + gDays[gm - 1];
+    jy += 33 * Math.floor(days / 12053); days %= 12053;
+    jy += 4 * Math.floor(days / 1461); days %= 1461;
+    if (days > 365) { jy += Math.floor((days - 1) / 365); days = (days - 1) % 365; }
+    var jm = (days < 186) ? 1 + Math.floor(days / 31) : 7 + Math.floor((days - 186) / 30);
+    var jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+    return [jy, jm, jd];
+  }
+  function toGregorian(jy, jm, jd) {
+    var gy = (jy <= 979) ? 621 : 1600; jy -= (jy <= 979) ? 0 : 979;
+    var days = (365 * jy) + (Math.floor(jy / 33) * 8)
+      + Math.floor(((jy % 33) + 3) / 4) + 78 + jd
+      + ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
+    gy += 400 * Math.floor(days / 146097); days %= 146097;
+    if (days > 36524) { gy += 100 * Math.floor(--days / 36524); days %= 36524; if (days >= 365) days++; }
+    gy += 4 * Math.floor(days / 1461); days %= 1461;
+    gy += Math.floor((days - 1) / 365); if (days > 365) days = (days - 1) % 365;
+    var gd = days + 1;
+    var leap = ((gy % 4 === 0 && gy % 100 !== 0) || (gy % 400 === 0));
+    var sal = [0,31, leap ? 29 : 28, 31,30,31,30,31,31,30,31,30,31];
+    var gm; for (gm = 0; gm < 13; gm++) { var v = sal[gm]; if (gd <= v) break; gd -= v; }
+    return [gy, gm, gd];
+  }
+  function isLeapJalali(jy) { var r = jy % 33; return [1,5,9,13,17,22,26,30].indexOf(r) !== -1; }
+  function daysInJalaliMonth(jy, jm) {
+    if (jm <= 6) return 31; if (jm <= 11) return 30;
+    return isLeapJalali(jy) ? 30 : 29;
+  }
+
+  /* ---------- ثابت‌ها ---------- */
+  var MONTHS = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+  var WEEKDAYS = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+  var WEEKDAYS_SHORT = ['ش','ی','د','س','چ','پ','ج'];
+  var FA = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+  function toFa(n){ return String(n).replace(/\d/g, function(d){ return FA[+d]; }); }
+
+  /* ---------- وضعیت ---------- */
+  var todayJ = (function(){ var n = new Date(); return toJalali(n.getFullYear(), n.getMonth()+1, n.getDate()); })();
+  var viewJy = todayJ[0], viewJm = todayJ[1];
+
+  function firstWeekdayOf(jy, jm) {
+    var g = toGregorian(jy, jm, 1);
+    var dow = new Date(Date.UTC(g[0], g[1]-1, g[2])).getUTCDay();
+    return (dow + 1) % 7;
+  }
+
+  /* ---------- رسم ---------- */
+  var titleEl = document.getElementById('title');
+  var gridEl = document.getElementById('grid');
+  var weekdaysEl = document.getElementById('weekdays');
+
+  (function buildWeekdays(){
+    weekdaysEl.innerHTML = '';
+    for (var i = 0; i < 7; i++) {
+      var d = document.createElement('div');
+      d.textContent = WEEKDAYS_SHORT[i];
+      d.title = WEEKDAYS[i];
+      if (i === 6) d.className = 'wd-fri';
+      weekdaysEl.appendChild(d);
+    }
+  })();
+
+  function render() {
+    titleEl.textContent = MONTHS[viewJm - 1] + ' ' + toFa(viewJy);
+    gridEl.innerHTML = '';
+    var offset = firstWeekdayOf(viewJy, viewJm);
+    var total = daysInJalaliMonth(viewJy, viewJm);
+    for (var i = 0; i < offset; i++) {
+      var empty = document.createElement('div');
+      empty.className = 'cell empty';
+      gridEl.appendChild(empty);
+    }
+    for (var day = 1; day <= total; day++) {
+      var col = (offset + day - 1) % 7;
+      var cell = document.createElement('div');
+      cell.className = 'cell' + (col === 6 ? ' friday' : '');
+      cell.textContent = toFa(day);
+      if (viewJy === todayJ[0] && viewJm === todayJ[1] && day === todayJ[2]) {
+        cell.classList.add('today');
+      }
+      gridEl.appendChild(cell);
+    }
+  }
+
+  /* ---------- ناوبری ---------- */
+  function shiftMonth(delta){
+    var m = viewJm + delta, y = viewJy;
+    if (m > 12) { m = 1; y++; }
+    if (m < 1)  { m = 12; y--; }
+    viewJy = y; viewJm = m; render();
+  }
+  document.getElementById('prevBtn').addEventListener('click', function(){ shiftMonth(-1); });
+  document.getElementById('nextBtn').addEventListener('click', function(){ shiftMonth(1); });
+  document.getElementById('todayBtn').addEventListener('click', function(){
+    var n = new Date();
+    todayJ = toJalali(n.getFullYear(), n.getMonth()+1, n.getDate());
+    viewJy = todayJ[0]; viewJm = todayJ[1]; render();
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowLeft')  shiftMonth(1);
+    if (e.key === 'ArrowRight') shiftMonth(-1);
+  });
+
+  render();
+
+  /* ---------- PWA: ثبت Service Worker ---------- */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./sw.js').catch(function(err){
+        console.warn('Service Worker ثبت نشد:', err);
+      });
+    });
+  }
+
+  /* ---------- PWA: دکمهٔ نصب ---------- */
+  var installBtn = document.getElementById('installBtn');
+  var deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.hidden = false;
+  });
+  installBtn.addEventListener('click', async function(){
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    try {
+      var choice = await deferredPrompt.userChoice;
+      if (choice.outcome === 'accepted') installBtn.hidden = true;
+    } catch(_) {}
+    deferredPrompt = null;
+  });
+  window.addEventListener('appinstalled', function(){
+    installBtn.hidden = true;
+    deferredPrompt = null;
+  });
+
+  /* ---------- نشانگر آفلاین ---------- */
+  var badge = document.getElementById('offlineBadge');
+  function updateOnline(){
+    if (navigator.onLine) badge.classList.remove('show');
+    else badge.classList.add('show');
+  }
+  window.addEventListener('online',  updateOnline);
+  window.addEventListener('offline', updateOnline);
+  updateOnline();
+})();
+</script>
+</body>
+  </html>
